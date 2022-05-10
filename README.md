@@ -251,35 +251,7 @@ transaction(greeting: String) {
 ```
 
 ```ts
-    // we need to know who is paying for the transaction, along with their signing key
-    let payer = "f8d6e0586b0a20c7";
-    let payer_private_key = "324db577a741a9b7a2eb6cef4e37e72ff01a554bdbe4bd77ef9afe1cb00d3cec";
-    let payer_private_key_id = 0;
-    let account: flow::Account = connection.get_account(payer).await?.account.unwrap();
-    let proposer = flow::TransactionProposalKey {
-        address: hex::decode(payer).unwrap(),
-        key_id: payer_private_key_id,
-        sequence_number: account.keys[payer_private_key_id as usize].sequence_number as u64,
-    };
-
-    let transaction = b"
-    transaction(greeting: String) {
-
-        let guest: Address
-      
-        prepare(authorizer: AuthAccount) {
-          self.guest = authorizer.address
-        }
-      
-        execute {
-          log(greeting.concat(\",\").concat(guest.toString()))
-        }
-      }
-    ";
-
-    let latest_block = connection.get_block(None, None, None).await?.block.unwrap();
-    let arg1 = Argument::str("hello world!").encode_str();
-    let built_transaction = build_transaction(transaction.to_vec(), vec![arg1], latest_block.id, 9999, proposer, vec![payer.to_owned()], payer.to_owned()).await?;
+    // TODO
 ```
 
 ### Sign Transactions
@@ -294,13 +266,7 @@ Signatures can be generated more securely using keys stored in a hardware device
 
 Simple signature example:
 ```ts
-    let signature = Sign {
-        address: payer.to_owned(),
-        key_id: payer_private_key_id,
-        private_key: payer_private_key.to_owned(),
-    };
-    // here we place the signature within the Vector that is passed for the envelope signatures.
-    let signed_transaction = sign_transaction(built_transaction, vec![], vec![&signature]).await?;
+    // TODO
 ```
 
 Flow supports great flexibility when it comes to transaction signing. We can define multiple authorizers (multi-sig transactions) and even choose who will pay for the transaction. We will explore advanced signing scenarios bellow.
@@ -316,13 +282,7 @@ Flow supports great flexibility when it comes to transaction signing. We can def
 | `0x01`  | 1      | 1.0    |
 
 ```ts
-    let signature = Sign {
-        address: "01".to_owned(), // don't pass in the 0x prefix
-        key_id: 1,
-        private_key: "324db577a741a9b7a2eb6cef4e37e72ff01a554bdbe4bd77ef9afe1cb00d3cec".to_owned(),
-    };
-    // here we place the signature within the Vector that is passed for the envelope signatures.
-    let signed_transaction = sign_transaction(built_transaction, vec![], vec![&signature]).await?;
+    // TODO
 ```
 
 
@@ -338,18 +298,7 @@ Flow supports great flexibility when it comes to transaction signing. We can def
 | `0x01`  | 2      | 0.5    |
 
 ```ts
-    let signature1 = Sign {
-        address: "01".to_owned(),
-        key_id: 1,
-        private_key: "324db577a741a9b7a2eb6cef4e37e72ff01a554bdbe4bd77ef9afe1cb00d3cec".to_owned(),
-    };
-    let signature2 = Sign {
-        address: "01".to_owned(),
-        key_id: 2,
-        private_key: "e408a21f73615f2a312c936818c50ff2225c16d772dbe0bd2b867ae40d9b5f0f".to_owned(),
-    };
-    // here we place both signatures within the Vector that is passed for the envelope signatures.
-    let signed_transaction = sign_transaction(built_transaction, vec![], vec![&signature1, &signature2]).await?;
+    // TODO
 ```
 
 ### [Multiple parties](https://docs.onflow.org/concepts/transaction-signing/#multiple-parties)
@@ -366,19 +315,7 @@ Flow supports great flexibility when it comes to transaction signing. We can def
 | `0x02`  | 3      | 1.0    |
 
 ```ts
-    let signature1 = Sign {
-        address: "01".to_owned(),
-        key_id: 1,
-        private_key: "324db577a741a9b7a2eb6cef4e37e72ff01a554bdbe4bd77ef9afe1cb00d3cec".to_owned(),
-    };
-    let signature2 = Sign {
-        address: "02".to_owned(),
-        key_id: 3,
-        private_key: "d48276bee1a95dd0e217dc22ac1338a694bfc5543fb202c1d8deecffd0f86282".to_owned(),
-    };
-    // here we place both signatures within the Vector that is passed for the envelope signatures.
-    let signed_transaction = sign_transaction(built_transaction, vec![], vec![&signature1, &signature2]).await?;
-
+    // TODO
 ```
 
 ### [Multiple parties, two authorizers](https://docs.onflow.org/concepts/transaction-signing/#multiple-parties)
@@ -396,22 +333,7 @@ Flow supports great flexibility when it comes to transaction signing. We can def
 | `0x02`  | 3      | 1.0    |
 
 ```ts
-// In this more complicated example, we will need to specify both keys as authorizers when building the transaction
-let built_transaction = build_transaction(transaction.to_vec(), vec![], latest_block.id, 9999, proposer, vec!["01".to_owned(), "02".to_owned()], payer.to_owned()).await?;
-
-// then the signing part is actually simple
-    let signature1 = Sign {
-        address: "01".to_owned(),
-        key_id: 1,
-        private_key: "324db577a741a9b7a2eb6cef4e37e72ff01a554bdbe4bd77ef9afe1cb00d3cec".to_owned(),
-    };
-    let signature2 = Sign {
-        address: "02".to_owned(),
-        key_id: 3,
-        private_key: "d48276bee1a95dd0e217dc22ac1338a694bfc5543fb202c1d8deecffd0f86282".to_owned(),
-    };
-    let signed_transaction = sign_transaction(built_transaction, vec![&signature1], vec![&signature2]).await?;
-
+    // TODO
 ```
 
 ### [Multiple parties, multiple signatures](https://docs.onflow.org/concepts/transaction-signing/#multiple-parties)
@@ -431,28 +353,7 @@ let built_transaction = build_transaction(transaction.to_vec(), vec![], latest_b
 | `0x02`  | 4      | 0.5    |
 
 ```ts
-    let key1sig = Sign {
-        address: "01".to_owned(),
-        key_id: 1,
-        private_key: "324db577a741a9b7a2eb6cef4e37e72ff01a554bdbe4bd77ef9afe1cb00d3cec".to_owned(),
-    };
-    let key2sig = Sign {
-        address: "01".to_owned(),
-        key_id: 2,
-        private_key: "e408a21f73615f2a312c936818c50ff2225c16d772dbe0bd2b867ae40d9b5f0f".to_owned(),
-    };
-    let key3sig = Sign {
-        address: "02".to_owned(),
-        key_id: 3,
-        private_key: "d48276bee1a95dd0e217dc22ac1338a694bfc5543fb202c1d8deecffd0f86282".to_owned(),
-    };
-    let key4sig = Sign {
-        address: "02".to_owned(),
-        key_id: 4,
-        private_key: "38eb2ded396c557affdcca9596bcf7e8643dcc433157acdee93357c7be7693ae".to_owned(),
-    };
-
-    let signed_transaction = sign_transaction(built_transaction, vec![&key1sig, &key2sig], vec![&key3sig, &key4sig]).await?;
+    // TODO
 ```
 
 ### Send Transactions
@@ -461,7 +362,7 @@ After a transaction has been [built](#build-transactions) and [signed](#sign-tra
 
 
 ```ts
-    let transaction_response = connection.send_transaction(signed_transaction).await?;
+    // TODO
 ```
 
 
@@ -491,7 +392,7 @@ An account key contains the following data:
 Account creation happens inside a transaction, which means that somebody must pay to submit that transaction to the network. We'll call this person the account creator. Make sure you have read [sending a transaction section](#send-transactions) first. 
 
 ```ts
-    let result = connection.create_account(public_keys, payer, payer_private_key, payer_private_key_id).await?;
+    // TODO
 ```
 
 After the account creation transaction has been submitted you can retrieve the new account address by [getting the transaction result](#get-transactions). 
