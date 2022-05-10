@@ -1,7 +1,10 @@
-# flow-ts
+# flow-node-sdk
+
 Flow SDK for Node with TypeScript bindings
 
 This package is intended for use within Node. Browser implementations may work somewhat but are unsupported.
+
+Docs are a (mess) work in progress. You should review the [test cases](https://github.com/MarshallBelles/flow-node-sdk/blob/main/test/test.spec.ts) as an example for the meantime.
 
 ## Overview 
 
