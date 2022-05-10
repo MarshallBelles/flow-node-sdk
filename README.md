@@ -11,16 +11,9 @@ SDKs are open source, and you can use them according to either the MIT / APACHE2
 
 ## Getting Started
 
-### Installing
-
 ```bash
 npm install --save flow-node-sdk;
 ```
-
-
-### Importing the Library
-
-To import and build the library, run `cargo test` or `cargo build` inside your project directory.
 
 ## Connect
 
@@ -33,13 +26,7 @@ The Access Nodes hosted by DapperLabs are accessible at:
 - Local Emulator `127.0.0.1:3569` 
 
 ```ts
-use flow_rust_sdk::*;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut connection = FlowConnection::new("grpc://localhost:3569").await?;
-    Ok(())
-}
+    // TODO
 ```
 
 ## Querying the Flow Network
@@ -58,17 +45,7 @@ Query the network for block by id, height or get the latest block.
 This example depicts ways to get the latest block as well as any other block by height or ID:
 
 ```ts
-use flow_rust_sdk::*;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut connection = FlowConnection::new("grpc://localhost:3569").await?;
-
-    let get_latest_block_response = connection.get_block(None, None, None).await?;
-
-    println!("{:?}", get_latest_block_response);
-    Ok(())
-}
+    // TODO
 ```
 Result output:
 ```bash
@@ -91,18 +68,7 @@ An account includes the following data:
 Example depicts ways to get an account at the latest block and at a specific block height:
 
 ```ts
-use flow_rust_sdk::*;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut connection = FlowConnection::new("grpc://localhost:3569").await?;
-
-    // make sure you sanitize your inputs and remove the 0x before trying to get_account
-    let get_account_response = connection.get_account("f8d6e0586b0a20c7").await?;
-
-    println!("{:?}", get_account_response);
-    Ok(())
-}
+    // TODO
 ```
 Result output:
 ```bash
@@ -131,17 +97,7 @@ Retrieve transactions from the network by providing a transaction ID. After a tr
 
 
 ```ts
-use flow_rust_sdk::*;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut connection = FlowConnection::new("grpc://localhost:3569").await?;
-
-    let get_account_response = connection.get_transaction_result(hex::decode("1c1b1e76b591f78d27a2dc5f78bb8dbebccca587c068925924b36334ae1c2b4a")?).await?;
-
-    println!("{:?}", get_account_response);
-    Ok(())
-}
+    // TODO
 ```
 
 Example output:
@@ -169,18 +125,7 @@ core events, and you should read more about them in [this document](https://docs
 Example depicts ways to get events within block range or by block IDs:
 
 ```ts
-use flow_rust_sdk::*;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut connection = FlowConnection::new("grpc://localhost:3569").await?;
-
-    let current_block = connection.get_block(None, None, None).await?.block.unwrap();
-    let get_event_response = connection.get_events_for_block_ids("A.f8d6e0586b0a20c7.FlowToken.TokensDeposited", vec![current_block.id]).await?;
-
-    println!("{:?}", get_event_response);
-    Ok(())
-}
+    // TODO
 ```
 Example output:
 ```bash
@@ -196,18 +141,7 @@ Collections are used to improve consensus throughput by increasing the number of
 
 Example retrieving a collection:
 ```ts
-use flow_rust_sdk::*;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut connection = FlowConnection::new("grpc://localhost:3569").await?;
-
-    let get_event_response = connection.get_collection(hex::decode("COLLECTION_HEX_ENCODED_ID")?).await?;
-
-    println!("{:?}", get_event_response);
-    Ok(())
-}
-
+    // TODO
 ```
 
 ### Execute Scripts
@@ -221,25 +155,7 @@ We can execute a script using the latest state of the Flow blockchain or we can 
 � **Block height** expresses the height of the block in the chain.
 
 ```ts
-use flow_rust_sdk::*;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut connection = FlowConnection::new("grpc://localhost:3569").await?;
-
-    // Simple script with one argument
-    let script = b"
-        pub fun main(a: Int64): Int64 {
-            return a + 10
-        }
-    ";
-
-    let arg1 = Argument::int64(5).encode();
-    let script_execution_result = connection.execute_script(script.to_vec(), vec![arg1], None, None).await?;
-
-    println!("{:?}", from_slice::<Value>(&script_execution_result.value)?);
-    Ok(())
-}
+    // TODO
 ```
 
 Example output:
@@ -249,43 +165,7 @@ Example output:
 
 More complex example:
 ```ts
-use flow_rust_sdk::*;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut connection = FlowConnection::new("grpc://localhost:3569").await?;
-
-    // complex script
-    let script = b"
-    pub struct User {
-            pub var balance: UFix64
-            pub var address: Address
-            pub var name: String
-
-            init(name: String, address: Address, balance: UFix64) {
-                self.name = name
-                self.address = address
-                self.balance = balance
-            }
-        }
-
-        pub fun main(name: String): User {
-            return User(
-                name: name,
-                address: 0x1,
-                balance: 10.0
-            )
-        }
-    ";
-
-    let arg1 = Argument::str("my name").encode_str();
-    let script_execution_result = connection
-        .execute_script(script.to_vec(), vec![arg1], None, None)
-        .await?;
-
-    println!("{:?}", from_slice::<Value>(&script_execution_result.value)?);
-    Ok(())
-}
+    // TODO
 ```
 
 Example output:
