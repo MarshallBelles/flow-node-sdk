@@ -1,5 +1,5 @@
 import { addressBuffer, blockBuffer, rlpEncode, scriptBuffer, signatureBuffer } from './encode';
-import { AccountKey, EventPayload, Transaction, TxEnvelope, TxPayload, Signature } from './models';
+import { AccountKey, Transaction, TxEnvelope, TxPayload, Signature } from './models';
 import { ec as EC } from 'elliptic';
 import { SHA3 } from 'sha3';
 
@@ -177,11 +177,4 @@ export const transactionSignature = (msg: string, key: AccountKey): string => {
   const r = sig.r.toArrayLike(Buffer, 'be', n);
   const s = sig.s.toArrayLike(Buffer, 'be', n);
   return Buffer.concat([r, s]).toString('hex');
-};
-
-export const processEvents = (txr: any): void => {
-  txr.events.forEach((evt: any, i: number) => {
-    const pld: EventPayload = JSON.parse(evt.payload.toString('utf-8'));
-    txr.events[i].payload = pld;
-  });
 };

@@ -16,21 +16,7 @@ export interface Event {
     transaction_id: Buffer;
     transaction_index: number;
     event_index: number;
-    payload: EventPayload;
-}
-
-export interface EventPayload {
-    event: string;
-    value: {
-        id: string;
-        fields: Array<{
-            name: string;
-            value: {
-                type: string;
-                value: any;
-            }
-        }>;
-    }
+    payload: Buffer;
 }
 
 export interface Account {

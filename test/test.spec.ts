@@ -208,14 +208,16 @@ describe('ContractTesting', () => {
     //   transaction_id: Buffer;
     //   transaction_index: number;
     //   event_index: number;
-    //   payload: EventPayload;
+    //   payload: Buffer;
     // }
     events.forEach((evt) => {
       expect(evt.type).toBeDefined();
       expect(evt.transaction_id).toBeDefined();
+      expect(evt.transaction_id.toString('hex')).toBeTruthy();
       expect(evt.transaction_index).toBeDefined();
       expect(evt.event_index).toBeDefined();
       expect(evt.payload).toBeDefined();
+      expect(evt.payload.toString('hex')).toBeTruthy();
     });
   });
 
