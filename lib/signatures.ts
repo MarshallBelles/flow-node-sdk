@@ -178,3 +178,11 @@ export const transactionSignature = (msg: string, key: AccountKey): string => {
   const s = sig.s.toArrayLike(Buffer, 'be', n);
   return Buffer.concat([r, s]).toString('hex');
 };
+
+export const genP256 = (): { privateKey: string, publicKey: string } => {
+  const ec = new EC('p256');
+  const k = ec.genKeyPair();
+  const publicKey = Buffer.from(k.getPublic().getX().toArray('be', 32).concat(k.getPublic().getY().toArray('be', 32))).toString('hex');
+  const privateKey = Buffer.from(k.getPrivate().toArray('be')).toString('hex');
+  return { publicKey, privateKey };
+};

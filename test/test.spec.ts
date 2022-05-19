@@ -3,7 +3,7 @@ import 'jest';
 import { Flow, AccountKey } from '../lib';
 import { exec, ChildProcess } from 'child_process';
 import { prepareSimpleTransaction } from '../lib/encode';
-import { argBuilder } from '../lib/signatures';
+import { argBuilder, genP256 } from '../lib/signatures';
 
 describe('ContractTesting', () => {
   let flow: Flow;
@@ -190,7 +190,9 @@ describe('ContractTesting', () => {
           }
         }
       }`;
-    const keys: Array<string> = [svc.public_key.toString('hex')];
+    // generate a new key for this account
+    const newKey = genP256();
+    const keys: Array<string> = [newKey.publicKey];
     const tx = await prepareSimpleTransaction(flow, createAccountTemplate, [keys, new Map<string, string>()], svc);
     if (tx instanceof Error) return debugReject(tx);
     const txRes = await flow.submitTransaction(tx);
