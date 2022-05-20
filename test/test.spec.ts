@@ -1,8 +1,7 @@
 /* eslint-disable indent */
 import 'jest';
-import { Flow, AccountKey } from '../lib';
+import { Flow, AccountKey, prepareSimpleTransaction } from '../lib';
 import { exec, ChildProcess } from 'child_process';
-import { prepareSimpleTransaction } from '../lib/encode';
 import { argBuilder, genP256 } from '../lib/signatures';
 
 describe('ContractTesting', () => {

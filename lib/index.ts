@@ -4,6 +4,8 @@ import * as protoLoader from '@grpc/proto-loader';
 import { Account, Block, Event, Transaction, TransactionQueuedResponse, TransactionResultResponse } from './models';
 import { flowProto } from './flowproto';
 export * from './models';
+export * from './signatures';
+export * from './encode';
 import * as fs from 'fs';
 
 export class Flow {
