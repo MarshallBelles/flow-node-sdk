@@ -1,108 +1,65 @@
 /* eslint-disable camelcase */
-import * as grpc from '@grpc/grpc-js';
-import * as protoLoader from '@grpc/proto-loader';
-import { Account, Block, Event, Transaction, TransactionQueuedResponse, TransactionResultResponse } from './models';
-import { flowProto } from './flowproto';
 export * from './models';
-export * from './signatures';
 export * from './encode';
-import * as fs from 'fs';
+export { AccountKey, argBuilder, genP256 } from './signatures';
+import { Axios } from 'axios';
+import { AccountResponse, BlockResponse, EventsResponse, ExecuteScriptRequest, TransactionRequest, TransactionResponse, TransactionResultResponse } from './models';
 
 export class Flow {
-  private access: any;
-  private client: any;
-  private network: string;
+  private client: Axios;
   constructor(network: string) {
-    this.network = network;
-  }
-  public async start() {
-    await new Promise((p) => fs.writeFile('flow.proto', flowProto, p));
-    const packageDefinition = protoLoader.loadSync('./flow.proto', {
-      keepCase: true,
-      longs: String,
-      enums: String,
-      defaults: true,
-      oneofs: true,
-    });
-    switch (this.network) {
-      case 'testnet':
-        this.network = 'access.devnet.nodes.onflow.org:9000';
-        break;
+    switch (network) {
       case 'localhost':
-        this.network = '127.0.0.1:3569';
+        network = 'http://127.0.0.1:8888/v1';
+        break;
+      case 'testnet':
+        network = 'https://rest-testnet.onflow.org/v1';
         break;
       case 'mainnet':
-        this.network = 'access.mainnet.nodes.onflow.org:9000';
+        network = 'https://rest-mainnet.onflow.org/v1';
         break;
 
       default:
         break;
     }
-    this.access = (<any>grpc.loadPackageDefinition(packageDefinition).flow)['access'];
-    this.client = new this.access['AccessAPI'](this.network, grpc.credentials.createInsecure());
+    this.client = new Axios({ baseURL: network });
   }
-  public async getLatestBlock(sealed: boolean = false): Promise<Block | Error> {
-    return await new Promise<Block | Error>((p) => {
-      this.client.getLatestBlock({ is_sealed: sealed }, (err: Error, res: any) => {
-        if (err) return p(err);
-        p(res['block']);
-      });
-    });
+  public async getLatestBlock(sealed: boolean = false): Promise<BlockResponse | null> {
+    const dat = JSON.parse((await this.client.get(`blocks?height=${sealed ? 'sealed' : 'final'}`)).data);
+    return dat.pop();
   }
-  public async getTransaction(transactionId: Buffer): Promise<Transaction | Error> {
-    return await new Promise<Transaction | Error>((p) => {
-      this.client.getTransaction({ id: transactionId }, (err: any, res: any) => {
-        if (err) return p(err);
-        p(res['transaction']);
-      });
-    });
+  public async getBlockById(blockId: string): Promise<BlockResponse | null> {
+    const dat = JSON.parse((await this.client.get(`blocks/${blockId}`)).data);
+    return dat;
   }
-  public async getTransactionResult(transactionId: Buffer): Promise<TransactionResultResponse | Error> {
-    return await new Promise<TransactionResultResponse | Error>((p) => {
-      this.client.getTransactionResult({ id: transactionId }, (err: any, res: any) => {
-        if (err) return p(err);
-        p({ id: transactionId, ...res });
-      });
-    });
+
+  public async getTransaction(transactionId: string): Promise<TransactionResponse | null> {
+    const dat = JSON.parse((await this.client.get(`transactions/${transactionId}`)).data);
+    return dat;
   }
-  public async submitTransaction(transaction: Transaction): Promise<TransactionQueuedResponse | Error> {
-    return await new Promise<TransactionQueuedResponse | Error>((p) => {
-      this.client.sendTransaction({ transaction: transaction }, (err: Error, res: any) => {
-        if (err) return p(err);
-        p(res);
-      });
-    });
+
+  public async getTransactionResult(transactionId: string): Promise<TransactionResultResponse | null> {
+    const dat = JSON.parse((await this.client.get(`transaction_results/${transactionId}`)).data);
+    return dat;
   }
-  public async getAccount(address: Buffer): Promise<Account | Error> {
-    return await new Promise<Account | Error>((p) => {
-      this.client.getAccountAtLatestBlock({ address }, (err: any, res: any) => {
-        if (err) return Promise.reject(err);
-        p(res['account']);
-      });
-    });
+  public async submitTransaction(transaction: TransactionRequest): Promise<TransactionResponse | null> {
+    const dat = JSON.parse((await this.client.post('transactions', JSON.stringify(transaction))).data);
+    return dat;
   }
-  public async executeScript(script: Buffer, args: Buffer[]): Promise<{ value: Buffer } | Error> {
-    return await new Promise<any | Error>((p) => {
-      this.client.executeScriptAtLatestBlock({ script: script, arguments: args }, (err: any, res: any) => {
-        if (err) return p(err);
-        p(res);
-      });
-    });
+  public async getAccount(address: string): Promise<AccountResponse | null> {
+    const dat = JSON.parse((await this.client.get(`accounts/${address}?expand=keys,contracts`)).data);
+    return dat;
   }
-  public async getEventsWithinBlockHeight(type: string, startHeight: number, endHeight: number): Promise<Event[] | Error> {
-    return await new Promise<Event[] | Error>((p) => {
-      this.client.getEventsForHeightRange({ type, start_height: startHeight, end_height: endHeight }, (err: any, res: any) => {
-        if (err) return p(err);
-        p(res['results'].map((x: any) => x.events).flat());
-      });
-    });
+  public async executeScript(script: ExecuteScriptRequest): Promise<any | null> {
+    const dat = JSON.parse((await this.client.post('scripts', JSON.stringify(script))).data);
+    return JSON.parse(Buffer.from(dat, 'base64').toString('utf-8'));
   }
-  public async getEvents(type: string, blockIds: Array<Buffer>): Promise<Event[] | Error> {
-    return await new Promise<Event[] | Error>((p) => {
-      this.client.getEventsForBlockIDs({ type, block_ids: blockIds }, (err: any, res: any) => {
-        if (err) return p(err);
-        p(res['results'].map((x: any) => x.events).flat());
-      });
-    });
+  public async getEventsWithinBlockHeight(type: string, startHeight: number, endHeight: number): Promise<EventsResponse[] | null> {
+    const dat = JSON.parse((await this.client.get(`events?type=${type}&start_height=${startHeight}&end_height=${endHeight}`)).data);
+    return dat;
+  }
+  public async getEvents(type: string, blockIds: Array<string>): Promise<EventsResponse | null> {
+    const dat = JSON.parse((await this.client.get(`events?type=${type}&block_ids=${blockIds}`)).data);
+    return dat;
   }
 }

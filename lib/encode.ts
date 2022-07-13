@@ -1,6 +1,6 @@
 import { Flow } from '.';
-import { AccountKey, Transaction } from './models';
-import { argBuilder, signTransaction } from './signatures';
+import { TransactionRequest } from './models';
+import { AccountKey, argBuilder, signTransaction, Transaction } from './signatures';
 
 export const leftPaddedHexBuffer = (value: string, pad: number): Buffer => Buffer.from(value.padStart(pad * 2, '0'), 'hex');
 
@@ -218,30 +218,58 @@ export const rlpEncode = (v: any): string => {
   return encode(v).toString('hex');
 };
 
-export const prepareSimpleTransaction = async (client: Flow, script: string | Buffer, args: any[], serviceAccount: AccountKey): Promise<Transaction | Error> => {
+export const prepareSimpleTransaction = async (client: Flow, script: string | Buffer, args: any[], serviceAccount: AccountKey): Promise<TransactionRequest | Error> => {
   if (typeof (script) == 'string') {
     script = Buffer.from(script, 'utf-8');
   }
-  const svcAcct = await client.getAccount(Buffer.from(serviceAccount.address, 'hex'));
-  if (svcAcct instanceof Error) return svcAcct;
-  serviceAccount.sequence_number = svcAcct.keys.find((x) => x.id === serviceAccount.id)?.sequence_number!;
+  const svcAcct = await client.getAccount(serviceAccount.address);
+  if (!svcAcct) return new Error('invalid account!');
+  serviceAccount.sequence_number = parseInt(svcAcct.keys.find((x) => x.index === serviceAccount.id.toString())?.sequence_number!);
   const block = await client.getLatestBlock(false);
-  if (block instanceof Error) return block;
-  const tx = {
+  if (!block) return new Error('invalid block!');
+  const tx: Transaction = {
     script,
-    arguments: argBuilder(args),
-    reference_block_id: block.id,
+    arguments: argBuilder(args).map((x) => Buffer.from(x, 'base64')),
+    reference_block_id: Buffer.from(block.header.id, 'hex'),
     gas_limit: 1000,
     proposal_key: {
-      address: svcAcct.address,
+      address: Buffer.from(svcAcct.address, 'hex'),
       key_id: serviceAccount.id,
       sequence_number: serviceAccount.sequence_number,
     },
-    payer: svcAcct.address,
-    authorizers: [svcAcct.address],
+    payer: Buffer.from(svcAcct.address, 'hex'),
+    authorizers: [Buffer.from(svcAcct.address, 'hex')],
     payload_signatures: [],
     envelope_signatures: [],
   };
   signTransaction(tx, [], [serviceAccount]);
-  return tx;
+
+  const txsub: TransactionRequest = {
+    script: tx.script.toString('base64'),
+    arguments: tx.arguments.map((x) => x.toString('base64')),
+    reference_block_id: tx.reference_block_id.toString('hex'),
+    gas_limit: tx.gas_limit.toString(),
+    payer: tx.payer.toString('hex'),
+    proposal_key: {
+      address: tx.proposal_key.address.toString('hex'),
+      key_index: tx.proposal_key.key_id.toString(),
+      sequence_number: tx.proposal_key.sequence_number.toString(),
+    },
+    authorizers: tx.authorizers.map((x) => x.toString('hex')),
+    payload_signatures: tx.payload_signatures.map((x) => {
+      return {
+        address: x.address.toString('hex'),
+        key_index: x.key_id.toString(),
+        signature: x.signature.toString('base64'),
+      };
+    }),
+    envelope_signatures: tx.envelope_signatures.map((x) => {
+      return {
+        address: x.address.toString('hex'),
+        key_index: x.key_id.toString(),
+        signature: x.signature.toString('base64'),
+      };
+    }),
+  };
+  return txsub;
 };

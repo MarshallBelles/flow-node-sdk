@@ -1,135 +1,194 @@
 /* eslint-disable no-unused-vars */
+export interface BlockResponse {
+    header: {
+        id: string;
+        parent_id: string;
+        height: string;
+        timestamp: string;
+        parent_voter_signature: string;
+    };
+    payload: {
+        collection_guarantees: [
+            {
+                collection_id: string;
+                signer_ids: string[];
+                signature: string;
+            }
+        ];
+        block_seals: [
+            {
+                block_id: string;
+                result_id: string;
+                final_state: string;
+                aggregated_approval_signatures: [
+                    {
+                        verifier_signatures: string[];
+                        signer_ids: string[];
+                    }
+                ]
+            }
+        ]
+    }
+    execution_result: {
+        id: string;
+        block_id: string;
+        events: EventResult[];
+        chunks: [
+            {
+                block_id: string;
+                collection_index: string;
+                start_state: string;
+                end_state: string;
+                index: string;
+                number_of_transactions: string;
+                total_computation_used: string;
+            }
+        ];
+        previous_result_id: string;
+        _links: {
+            _self: string;
+        }
+    }
+}
+
+export interface EventResult {
+    type: string;
+    transaction_id: string;
+    transaction_index: string;
+    event_index: string;
+    payload: string;
+}
+
+export interface TransactionResponse {
+    id: string;
+    script: string;
+    arguments: [
+        string
+    ];
+    reference_block_id: string;
+    gas_limit: string;
+    payer: string;
+    proposal_key: {
+        address: string;
+        key_index: string;
+        sequence_number: string
+    };
+    authorizers: [
+        string
+    ];
+    payload_signatures: [
+        {
+            address: string;
+            key_index: string;
+            signature: string;
+        }
+    ];
+    envelope_signatures: [
+        {
+            address: string;
+            key_index: string;
+            signature: string;
+        }
+    ];
+    result: {
+        block_id: string;
+        execution: string;
+        status: string; // Pending Finalized Executed Sealed Expired
+        status_code: number;
+        error_message: string;
+        computation_used: string;
+        events: EventResult[];
+        _links: {
+            _self: string;
+        }
+    };
+    _expandable: {
+        result: string;
+    };
+    _links: {
+        _self: string
+    }
+}
+
+export interface TransactionRequest {
+    script: string;
+    arguments: string[];
+    reference_block_id: string;
+    gas_limit: string;
+    payer: string;
+    proposal_key: {
+        address: string;
+        key_index: string;
+        sequence_number: string
+    };
+    authorizers: string[];
+    payload_signatures: Array<{
+        address: string;
+        key_index: string;
+        signature: string;
+    }>;
+    envelope_signatures: Array<{
+        address: string;
+        key_index: string;
+        signature: string;
+    }>;
+}
+
 export interface TransactionResultResponse {
-    id: Buffer;
+    block_id: string;
+    execution: string;
     status: string;
     status_code: number;
     error_message: string;
-    events: Array<Event>;
+    computation_used: string;
+    events: EventResult[];
+    _links: {
+        _self: string;
+    }
 }
 
-export interface TransactionQueuedResponse {
-    id: Buffer;
-}
-
-export interface Event {
-    type: string;
-    transaction_id: Buffer;
-    transaction_index: number;
-    event_index: number;
-    payload: Buffer;
-}
-
-export interface Account {
-    address: Buffer;
-    balance: number;
-    code: Buffer;
-    keys: Array<AccountKey>;
-    contracts: Object;
-}
-
-export interface Block {
-    id: Buffer;
-    parent_id: Buffer;
-    height: number;
-    timestamp: Timestamp;
-    collection_guarantees: Array<CollectionGuarantee>;
-    block_seals: Array<BlockSeal>;
-    signatures: Array<Buffer>;
-}
-
-export interface Timestamp {
-    seconds: number;
-    nanos: number;
-}
-
-export interface CollectionGuarantee {
-    collection_id: Buffer;
-    signatures: Array<Buffer>;
-}
-
-export interface BlockSeal {
-    block_id: Buffer;
-    execution_receipt_id: Buffer;
-    execution_receipt_signatures: Array<Buffer>;
-    result_approval_signatures: Array<Buffer>;
-}
-
-export interface AccountKey {
+export interface AccountResponse {
     address: string;
-    id: number;
-    public_key: Buffer,
-    private_key?: Buffer,
-    sign_algo: number;
-    hash_algo: number;
-    weight: number;
-    sequence_number: number;
-    revoked: Boolean;
-}
-
-export interface Transaction {
-    script: Buffer;
-    arguments: Array<Buffer>;
-    reference_block_id: Buffer;
-    gas_limit: number;
-    proposal_key: {
-        address: Buffer;
-        key_id: number;
-        sequence_number: number;
+    balance: string;
+    keys: [
+        {
+            index: string;
+            public_key: string;
+            signing_algorithm: string; // Enum: BLSBLS12381 ECDSAP256 ECDSASecp256k1
+            hashing_algorithm: string; // Enum: SHA2_256 SHA2_384 SHA3_256 SHA3_384 KMAC128
+            sequence_number: string;
+            weight: string;
+            revoked: boolean;
+        }
+    ];
+    contracts: {
+        property1: string;
+        property2: string
     };
-    payer: Buffer;
-    authorizers: Array<Buffer>;
-    payload_signatures: Array<TransactionSignature>;
-    envelope_signatures: Array<TransactionSignature>;
-}
-
-export interface TransactionSignature {
-    address: Buffer;
-    key_id: number;
-    signature: Buffer;
-}
-
-export enum TransactionStatus {
-    UNKNOWN,
-    PENDING,
-    FINALIZED,
-    EXECUTED,
-    SEALED,
-    EXPIRED,
-}
-
-export interface Signature {
-    address: string;
-    keyId: number;
-    sig: string;
-    signerIndex?: number;
-}
-
-
-export interface TxPayload {
-    script: string;
-    arguments: Buffer[];
-    refBlock: string;
-    gasLimit: number;
-    proposalKey: {
-        address: Buffer;
-        key_id: number;
-        sequence_number: number;
+    _expandable: {
+        keys: string;
+        contracts: string
     };
-    payer: string;
-    authorizers: string[];
+    _links: {
+        _self: string
+    }
 }
 
-export interface TxEnvelope {
-    script: string,
-    arguments: Buffer[],
-    refBlock: string,
-    gasLimit: number,
-    proposalKey: {
-        address: Buffer;
-        key_id: number;
-        sequence_number: number;
-    };
-    payer: string,
-    authorizers: string[],
-    payload_signatures: Signature[]
+export interface ExecuteScriptResponse {
+    value: string;
+}
+
+export interface ExecuteScriptRequest {
+    script: string; // base64 encoded string
+    arguments: string[]; // base64 encoded JSON-Cadence
+}
+
+export interface EventsResponse {
+    block_id: string;
+    block_height: string;
+    block_timestamp: string;
+    events: EventResult[];
+    _links: {
+        _self: string
+    }
 }
