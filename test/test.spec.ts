@@ -82,13 +82,13 @@ describe('ContractTesting', () => {
     if (transaction instanceof Error) return Promise.reject(transaction);
     const tx = await flow.submitTransaction(transaction);
     if (!tx) return Promise.reject(new Error('bad TX'));
-    const finTx = await flow.getTransactionResult(tx.id);
+    const finTx = await flow.getTransaction(tx.id);
     if (!finTx) return Promise.reject(new Error('bad TX'));
     expect(tx.id).toBeDefined();
-    expect(finTx.status).toBeDefined();
-    expect(finTx.status_code).toBeDefined();
-    expect(finTx.error_message).toBeDefined();
-    expect(finTx.events.length).toBeDefined();
+    expect(finTx.result.status).toBeDefined();
+    expect(finTx.result.status_code).toBeDefined();
+    expect(finTx.result.error_message).toBeDefined();
+    expect(finTx.result.events.length).toBeDefined();
   });
 
 
