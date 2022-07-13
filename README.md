@@ -20,13 +20,13 @@ npm install --save flow-node-sdk;
 
 ## Connect
 
-The library uses gRPC to communicate with the access nodes and it must be configured with an access node API URL. 
+This library uses the Flow REST API to communicate with the access nodes and it must be configured with an access node API URL. 
 
 � **Access API URLs** can be found [here](https://docs.onflow.org/access-api/#flow-access-node-endpoints). An error will be returned if the host is unreachable.
 The Access Nodes hosted by DapperLabs are accessible at:
-- Testnet `access.devnet.nodes.onflow.org:9000`
-- Mainnet `access.mainnet.nodes.onflow.org:9000`
-- Local Emulator `127.0.0.1:3569` 
+- Testnet `https://rest-testnet.onflow.org/v1`
+- Mainnet `https://rest-mainnet.onflow.org/v1`
+- Local Emulator `http://127.0.0.1:8888/v1`
 
 ```ts
     // TODO
