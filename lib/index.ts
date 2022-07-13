@@ -3,7 +3,7 @@ export * from './models';
 export * from './encode';
 export { AccountKey, argBuilder, genP256 } from './signatures';
 import { Axios } from 'axios';
-import { AccountResponse, BlockResponse, EventsResponse, ExecuteScriptRequest, TransactionRequest, TransactionResponse, TransactionResultResponse } from './models';
+import { AccountResponse, BlockResponse, EventsResponse, ExecuteScriptRequest, TransactionRequest, TransactionResponse } from './models';
 
 export class Flow {
   private client: Axios;
@@ -34,14 +34,10 @@ export class Flow {
   }
 
   public async getTransaction(transactionId: string): Promise<TransactionResponse | null> {
-    const dat = JSON.parse((await this.client.get(`transactions/${transactionId}`)).data);
+    const dat = JSON.parse((await this.client.get(`transactions/${transactionId}?expand=result`)).data);
     return dat;
   }
 
-  public async getTransactionResult(transactionId: string): Promise<TransactionResultResponse | null> {
-    const dat = JSON.parse((await this.client.get(`transaction_results/${transactionId}`)).data);
-    return dat;
-  }
   public async submitTransaction(transaction: TransactionRequest): Promise<TransactionResponse | null> {
     const dat = JSON.parse((await this.client.post('transactions', JSON.stringify(transaction))).data);
     return dat;
